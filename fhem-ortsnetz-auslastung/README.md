@@ -7,12 +7,19 @@ Ein einzelnes FHEM-`at` liest drei Spannungs-Readings und sendet sie alle fünf 
 
 ## Einrichtung
 
-1. In `at_ortsnetz.txt` die Werte oben im Block anpassen:
+1. Ein `at` mit beliebigem Inhalt anlegen, zum Beispiel `define at_ortsnetz at +*00:05:00 { }`.
+   Im Device bei **DEF** den kompletten Inhalt ab `+*00:05:00 {` bis zur letzten `}`
+   einfügen und mit **modify** speichern.
+
+   **Hinweis:** Der Code verwendet einfache Semikolons (kein `;;`) und kann deshalb
+   nur im Feld DEF eingefügt werden, nicht über die Kommandozeile.
+   
+2. In `at_ortsnetz.txt` die Werte oben im Block anpassen:
    - `$name`: exakter Name des `at`-Devices (hier `at_ortsnetz`)
    - `$lat` und `$lon`: ungefährer Standort, siehe Abschnitt Koordinaten im [Haupt-README](../README.md)
    - `@src`: pro Phase Device-Name und Reading mit der Spannung in Volt (je nach Gerät zum Beispiel `voltage` oder `voltage_0`)
    - `$einphasig`: auf `1` setzen, wenn nur eine Phase gemessen wird
-2. Den Inhalt in die FHEM-Kommandozeile einfügen. In der `fhem.cfg` muss jede Zeile des Blocks außer der letzten mit `\` enden.
+
 
 ## Verhalten
 
