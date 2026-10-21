@@ -1,4 +1,4 @@
-define at_ortsnetz at +*00:05:00 {
++*00:05:00 {
   my $name      = 'at_ortsnetz';   # exakter Name dieses at-Devices
   my $lat       = 51.123;          # Breitengrad, ungefaehr (3 Nachkommastellen)
   my $lon       = 10.123;          # Laengengrad, ungefaehr (3 Nachkommastellen)
