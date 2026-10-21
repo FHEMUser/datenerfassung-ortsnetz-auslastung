@@ -1,0 +1,44 @@
+define at_ortsnetz at +*00:05:00 {
+  my $name      = 'at_ortsnetz';   # exakter Name dieses at-Devices
+  my $lat       = 51.123;          # Breitengrad, ungefaehr (3 Nachkommastellen)
+  my $lon       = 10.123;          # Laengengrad, ungefaehr (3 Nachkommastellen)
+  my $einphasig = 0;               # 1 = nur die erste Quelle senden, L2/L3 = -1
+
+  # Pro Phase: [Device, Reading mit der Spannung in Volt]
+  my @src = (
+    ['Shelly_L1', 'voltage'],
+    ['Shelly_L2', 'voltage'],
+    ['Shelly_L3', 'voltage'],
+  );
+
+  my @v;
+  my $i = 0;
+  foreach my $s (@src) {
+    $i++;
+    my $x = ReadingsNum($s->[0], $s->[1], 0);
+    fhem("setreading $name l${i}_v $x");
+    my $ok = ($x > 0 && $x <= 500 && ReadingsAge($s->[0], $s->[1], 99999) <= 600);
+    push @v, ($ok ? $x : undef);
+  }
+
+  my @need = $einphasig ? ($v[0]) : @v;
+  return if grep { !defined } @need;
+  my ($l1, $l2, $l3) = $einphasig ? ($v[0], -1, -1) : @v;
+
+  my $json = sprintf('{"observed_at":"%s","latitude":%.3f,"longitude":%.3f,"l1_v":%s,"l2_v":%s,"l3_v":%s}',
+                     strftime("%Y-%m-%dT%H:%M:%SZ", gmtime()), $lat, $lon, $l1, $l2, $l3);
+
+  HttpUtils_NonblockingGet({
+    url      => "https://www.ortsnetz-auslastung.de/v1/measurements",
+    method   => "POST",
+    header   => "Content-Type: application/json",
+    data     => $json,
+    timeout  => 15,
+    callback => sub {
+      my ($h, $err, $data) = @_;
+      my $res = $err ? "Fehler $err" : "HTTP $h->{code}";
+      fhem("setreading $name api_status $res");
+      Log3 undef, ($err || $h->{code} != 202) ? 3 : 5, "ortsnetz: $res $data";
+    },
+  });
+}
